@@ -31,8 +31,8 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ["user", "Products Owner", "super admin"],
-        message: "role is either: admin, user, super admin",
+        values: ["user", "admin"],
+        message: "role is either: admin, user",
       },
       default: "user",
     },
@@ -62,30 +62,6 @@ const userSchema = new mongoose.Schema(
         message: "Passwords are not the same!",
       },
     },
-    products: [
-      {
-        type: mongoose.Schema.ObjectId,
-        ref: "Product",
-      },
-    ],
-    cartProducts: [
-      {
-        type: mongoose.Schema.ObjectId,
-        ref: "Product",
-      },
-    ],
-    bookedProducts: [
-      {
-        type: mongoose.Schema.ObjectId,
-        ref: "Product",
-      },
-    ],
-    favorites: [
-      {
-        type: mongoose.Schema.ObjectId,
-        ref: "Product",
-      },
-    ],
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
@@ -102,11 +78,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-userSchema.virtual("favoritesProducts", {
-  ref: "Product",
-  foreignField: "favorites",
-  localField: "_id",
-});
 
 userSchema.pre("save", async function (next) {
   // Only run this function if password has changed

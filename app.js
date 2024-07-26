@@ -14,6 +14,7 @@ const compression = require("compression");
 const AppError = require("./utils/appError");
 const globalErrorHandler = require("./controllers/errorController");
 var usersRouter = require("./routes/users");
+var menuRouter = require("./routes/menu");
 
 var app = express();
 
@@ -69,6 +70,7 @@ app.use(compression());
 app.use(express.static("upload"));
 
 app.use("/users", usersRouter);
+app.use("/menu", menuRouter);
 
 // Catch 404 and forward to error handler
 app.all("*", (req, res, next) => {
