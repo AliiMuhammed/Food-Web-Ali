@@ -56,8 +56,8 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     );
   }
   const user = await User.findById(req.user.id);
-  
-  if (user.file && user.file !== "default.jpg") {
+
+  if (user.file && user.file !== "default.png") {
     const oldFilePath = `upload/${user.file}`;
     fs.unlink(oldFilePath, (err) => {
       if (err) {
@@ -65,7 +65,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
       }
     });
   }
-  
+
   const filterdBody = filterObj(
     req.body,
     "firstName",
