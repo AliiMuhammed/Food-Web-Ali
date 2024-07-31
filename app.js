@@ -16,6 +16,7 @@ const globalErrorHandler = require("./controllers/errorController");
 var usersRouter = require("./routes/users");
 var menuRouter = require("./routes/menu");
 var tableRouter = require("./routes/tables");
+var bookingsRouter = require("./routes/bookings");
 
 var app = express();
 
@@ -74,6 +75,7 @@ app.use(express.static("upload"));
 app.use("/users", usersRouter);
 app.use("/menu", menuRouter);
 app.use("/tables", tableRouter);
+app.use("/bookings", bookingsRouter);
 
 // Catch 404 and forward to error handler
 app.all("*", (req, res, next) => {

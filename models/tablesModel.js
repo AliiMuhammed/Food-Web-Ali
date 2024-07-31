@@ -15,6 +15,10 @@ const tableSchema = new mongoose.Schema(
       type: Number,
       required: [true, "A Table must have a price"],
     },
+    reserved: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     toJSON: { virtuals: true },

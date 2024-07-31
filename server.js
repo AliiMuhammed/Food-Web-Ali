@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * Module dependencies.
- */
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
@@ -16,9 +13,6 @@ var app = require("./app");
 var debug = require("debug")("server:server");
 var http = require("http");
 
-/**
- * Get port from environment and store in Express.
- */
 dotenv.config({ path: "./config.env" });
 
 const DB = process.env.DATABASE.replace(
@@ -36,25 +30,17 @@ mongoose
 var port = normalizePort(process.env.PORT || "3000");
 app.set("port", port);
 
-/**
- * Create HTTP server.
- */
-
 var server = http.createServer(app);
 
+// Import the cron job function
+const startCronJob = require("./controllers/dailyTasks");
 
-
-/**
- * Listen on provided port, on all network interfaces.
- */
+// Start the cron job
+startCronJob();
 
 server.listen(port);
 server.on("error", onError);
 server.on("listening", onListening);
-
-/**
- * Normalize a port into a number, string, or false.
- */
 
 process.on("unhandledRejection", (err) => {
   console.log("UNHANDLED REJECTION! 💥 Shutting down...");
@@ -75,21 +61,15 @@ function normalizePort(val) {
   var port = parseInt(val, 10);
 
   if (isNaN(port)) {
-    // named pipe
     return val;
   }
 
   if (port >= 0) {
-    // port number
     return port;
   }
 
   return false;
 }
-
-/**
- * Event listener for HTTP server "error" event.
- */
 
 function onError(error) {
   if (error.syscall !== "listen") {
@@ -98,7 +78,6 @@ function onError(error) {
 
   var bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
 
-  // handle specific listen errors with friendly messages
   switch (error.code) {
     case "EACCES":
       console.error(bind + " requires elevated privileges");
@@ -112,10 +91,6 @@ function onError(error) {
       throw error;
   }
 }
-
-/**
- * Event listener for HTTP server "listening" event.
- */
 
 function onListening() {
   var addr = server.address();
