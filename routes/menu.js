@@ -1,7 +1,6 @@
 const express = require("express");
 const menuController = require("../controllers/menuController");
 const authController = require("../controllers/authController");
-const upload = require("../middlewares/uploadFiles");
 
 const router = express.Router();
 
@@ -13,21 +12,20 @@ router
   .route("/")
   .post(
     authController.restrictTo("admin"),
-    upload.single("image"),
+    menuController.uploadItemPhotos,
+    menuController.resizeItemPhotos,
     menuController.createItem
-  )
+  );
 
 router
   .route("/:id")
   .get(menuController.getItem)
   .patch(
     authController.restrictTo("admin"),
-    upload.single("image"),
-menuController.updateItem
+    menuController.uploadItemPhotos,
+    menuController.resizeItemPhotos,
+    menuController.updateItem
   )
-  .delete(
-    authController.restrictTo("admin"),
-    menuController.deleteItem
-  );
+  .delete(authController.restrictTo("admin"), menuController.deleteItem);
 
 module.exports = router;

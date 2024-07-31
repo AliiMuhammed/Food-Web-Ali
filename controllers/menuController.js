@@ -24,12 +24,14 @@ exports.uploadItemPhotos = upload.single("photo");
 exports.resizeItemPhotos = catchAsync(async (req, res, next) => {
   if (!req.file) return next();
 
-  req.file.filename = `Course-${Date.now()}.jpeg`;
-
+  req.file.filename = `item-${req.user.id}-${Date.now()}.jpeg`;
+  req.body.file = req.file.filename;
   await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat("jpeg")
-    .jpeg({ quality: 90 });
+    .jpeg({ quality: 90 })
+    .toFile(`upload/${req.file.filename}`);
+
   next();
 });
 

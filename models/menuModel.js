@@ -45,6 +45,10 @@ const menuSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+menuSchema.virtual("fileUrl").get(function () {
+  return `http://localhost:4000/${this.file}`;
+});
+
 const Menu = mongoose.model("Menu", menuSchema);
 
 module.exports = Menu;

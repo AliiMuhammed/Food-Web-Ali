@@ -15,16 +15,13 @@ exports.deleteOne = (Model) =>
     }
 
     // Check if model.file is an array
-    if (model.files && Array.isArray(model.files)) {
-      // Iterate over each file and delete it
-      for (const file of model.files) {
-        const publicId = file.split("/").pop().split(".")[0];
-        await cloudinary.uploader.destroy(publicId);
-      }
-    } else if (model.file) {
-      // Handle single file
-      const publicId = model.file.split("/").pop().split(".")[0];
-      await cloudinary.uploader.destroy(publicId);
+    if (model.file && model.file !== "default.jpg") {
+      const oldFilePath = `upload/${model.file}`;
+      fs.unlink(oldFilePath, (err) => {
+        if (err) {
+          console.error(`Failed to delete old photo: ${err}`);
+        }
+      });
     }
 
     const doc = await Model.findByIdAndDelete(req.params.id);
@@ -38,17 +35,19 @@ exports.deleteOne = (Model) =>
 exports.updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
     const model = await Model.findById(req.params.id);
-    let publicId;
+
     if (!model) {
       return next(new AppError("No Document found with that ID", 404));
     }
     // console.log(req.file);
     // console.log(model);
-    if (fs.existsSync("../upload" + model.file)) {
-      fs.unlinkSync("../upload/" + model.file);
-    }
-    if (req.file) {
-      req.body.image = req.file.filename;
+    if (model.file && model.file !== "default.jpg") {
+      const oldFilePath = `upload/${model.file}`;
+      fs.unlink(oldFilePath, (err) => {
+        if (err) {
+          console.error(`Failed to delete old photo: ${err}`);
+        }
+      });
     }
 
     const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
@@ -66,13 +65,6 @@ exports.updateOne = (Model) =>
 
 exports.createOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    
-    if (req.file) {
-      req.body.image = req.file.filename;
-    } else if (req.files && req.files.length > 0) {
-      // Multiple file upload
-      req.body.files = req.cloudinaryResults.map((result) => result.secure_url);
-    }
 
     const newDocument = await Model.create(req.body);
 
