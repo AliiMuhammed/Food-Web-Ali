@@ -2,8 +2,7 @@ var express = require("express");
 var router = express.Router();
 const authController = require("../controllers/authController");
 const userController = require("../controllers/usersControllers");
-// const uploader = require("../middlewares/uploadImages");
-const uploadToCloudinary = require("../middlewares/uploadToCloudinary");
+const upload = require("../middlewares/uploadFiles");
 
 router.post(
   "/signup",
@@ -21,12 +20,11 @@ router.patch(
   "/updateMe",
   userController.uploadUserPhoto,
   userController.resizeUserPhoto,
-  uploadToCloudinary,
   userController.updateMe
 );
 
 
-router.use(authController.restrictTo("super admin"));
+router.use(authController.restrictTo("admin"));
 
 router.patch("/activate/:id", userController.changeStatus);
 

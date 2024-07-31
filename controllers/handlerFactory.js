@@ -2,7 +2,9 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const APIFeatures = require("./../utils/apiFeatures");
 const cloudinary = require("../utils/cloudinary");
-const Email = require("../utils/email");
+const fs = require("fs");
+
+// const Email = require("../utils/email");
 
 exports.deleteOne = (Model) =>
   catchAsync(async (req, res, next) => {
@@ -42,15 +44,13 @@ exports.updateOne = (Model) =>
     }
     // console.log(req.file);
     // console.log(model);
-    if (req.file) {
-      req.body.file = req.cloudinaryResult.secure_url;
-
-      if (model.file) {
-        publicId = model.file.split("/").pop().split(".")[0];
-        await cloudinary.uploader.destroy(publicId);
-        req.body.file = req.cloudinaryResult.secure_url;
-      }
+    if (fs.existsSync("../upload" + model.file)) {
+      fs.unlinkSync("../upload/" + model.file);
     }
+    if (req.file) {
+      req.body.image = req.file.filename;
+    }
+
     const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -66,9 +66,9 @@ exports.updateOne = (Model) =>
 
 exports.createOne = (Model) =>
   catchAsync(async (req, res, next) => {
+    
     if (req.file) {
-      // Single file upload
-      req.body.file = req.cloudinaryResult.secure_url;
+      req.body.image = req.file.filename;
     } else if (req.files && req.files.length > 0) {
       // Multiple file upload
       req.body.files = req.cloudinaryResults.map((result) => result.secure_url);

@@ -4,25 +4,24 @@ const AppError = require("../utils/appError");
 const multer = require("multer");
 const sharp = require("sharp");
 const factory = require("./handlerFactory");
-const cloudinary = require("../utils/cloudinary");
-
+const fs = require("fs");
 
 const multerStorage = multer.memoryStorage();
 
-// const multerFilter = (req, file, cb) => {
-//   if (file.mimetype.startsWith("image")) {
-//     cb(null, true);
-//   } else {
-//     cb(new AppError("Not an image! Please upload only images.", 400), false);
-//   }
-// };
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError("Not an image! Please upload only images.", 400), false);
+  }
+};
 
 const upload = multer({
   storage: multerStorage,
-  // fileFilter: multerFilter,
+  fileFilter: multerFilter,
 });
 
-exports.uploadUserPhoto = upload.single("photo");
+exports.uploadUserPhoto = upload.single("image");
 
 exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
   if (!req.file) return next();
@@ -32,7 +31,9 @@ exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
   await sharp(req.file.buffer)
     .resize(500, 500)
     .toFormat("jpeg")
-    .jpeg({ quality: 90 });
+    .jpeg({ quality: 90 })
+    .toFile(`upload/${req.file.filename}`);
+
   next();
 });
 
@@ -55,11 +56,16 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     );
   }
   const user = await User.findById(req.user.id);
-  if (req.file) {
-    req.body.file = req.cloudinaryResult.secure_url;
-    const publicId = user.file.split("/").pop().split(".")[0];
-    await cloudinary.uploader.destroy(publicId);
+  
+  if (user.file && user.file !== "default.jpg") {
+    const oldFilePath = `upload/${user.file}`;
+    fs.unlink(oldFilePath, (err) => {
+      if (err) {
+        console.error(`Failed to delete old photo: ${err}`);
+      }
+    });
   }
+  
   const filterdBody = filterObj(
     req.body,
     "firstName",
@@ -68,6 +74,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     "file",
     "phone"
   );
+  if (req.file) filterdBody.file = req.file.filename;
 
   //2) update user document
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filterdBody, {
@@ -97,4 +104,3 @@ exports.updateUser = factory.updateOne(User);
 exports.getAllUsers = factory.getAll(User);
 
 exports.getUser = factory.getOne(User);
-

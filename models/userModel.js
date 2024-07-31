@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
     },
     file: {
       type: String,
-      default: "https://shopping-gp-2b5338c8c372.herokuapp.com/user_1.png",
+      default: "user_1.png",
     },
     role: {
       type: String,
@@ -55,7 +55,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please confirm your password"],
       validate: {
-        // This only works on CREATE and SAVE!!!
         validator: function (el) {
           return el === this.password;
         },
@@ -69,7 +68,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    passwordChangedAt: Date,
   },
   {
     toJSON: { virtuals: true },
@@ -78,13 +76,15 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// Virtual property to return the accessible link
+userSchema.virtual("fileUrl").get(function () {
+  return `http://localhost:4000/${this.file}`;
+});
 
 userSchema.pre("save", async function (next) {
-  // Only run this function if password has changed
   if (!this.isModified("password")) return next();
 
   this.password = await bcrypt.hash(this.password, 12);
-  //delete password Confirmation from database
   this.passwordConfirm = undefined;
   next();
 });

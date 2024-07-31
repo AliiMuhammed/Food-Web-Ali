@@ -1,9 +1,7 @@
 const express = require("express");
 const menuController = require("../controllers/menuController");
 const authController = require("../controllers/authController");
-const uploadToCloudinary = require("../middlewares/uploadToCloudinary");
-const detailsRouter = require("../routes/addDetails");
-const multer = require("multer");
+const upload = require("../middlewares/uploadFiles");
 
 const router = express.Router();
 
@@ -15,9 +13,7 @@ router
   .route("/")
   .post(
     authController.restrictTo("admin"),
-    menuController.uploadItemPhotos,
-    menuController.resizeItemPhotos,
-    uploadToCloudinary,
+    upload.single("image"),
     menuController.createItem
   )
 
@@ -26,10 +22,8 @@ router
   .get(menuController.getItem)
   .patch(
     authController.restrictTo("admin"),
-    menuController.uploadItemPhotos,
-    menuController.resizeItemPhotos,
-    uploadToCloudinary,
-    menuController.updateItem
+    upload.single("image"),
+menuController.updateItem
   )
   .delete(
     authController.restrictTo("admin"),
