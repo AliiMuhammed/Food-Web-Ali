@@ -1,66 +1,69 @@
 const mongoose = require("mongoose");
-const Table = require("./tablesModel"); // Assuming tableModel.js is the file containing the Table model
+const moment = require("moment-timezone");
 
 const bookingSchema = new mongoose.Schema(
   {
-    table: {
-      type: mongoose.Schema.ObjectId,
-      ref: "Table",
-      required: [true, "Booking must belong to a Table"],
-    },
     user: {
       type: mongoose.Schema.ObjectId,
       ref: "User",
       required: [true, "Booking must belong to a User"],
     },
-    numberOfTable: {
-      type: Number,
-      required: [true, "Number is required!"],
+    name: {
+      type: String,
+      required: [true, "Booking must belong to a User Name"],
     },
-    price: {
+    phone: {
       type: Number,
+    },
+    numOfPersons: {
+      type: Number,
+    },
+    status: {
+      type: String,
+      enum: {
+        values: ["Confirmed", "Declined", "In-progress", "Ended"],
+      },
+      default: "In-progress",
+    },
+    time: {
+      type: String,
+      required: [true, "Booking must have a time"],
+      validate: {
+        validator: function (v) {
+          return /\d{1,2}:\d{2} (AM|PM)/.test(v); // Validates time in o'clock format (e.g., "3:00 PM")
+        },
+        message: (props) => `${props.value} is not a valid time format!`,
+      },
+    },
+    date: {
+      type: Date,
+      required: [true, "Booking must have a date"],
+      get: (val) => {
+        return new Intl.DateTimeFormat("en-US").format(val); // Formats date to MM/DD/YYYY
+      },
     },
   },
   {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  },
-  { timestamps: true }
+    timestamps: true,
+  }
 );
 
-bookingSchema.index({ table: 1, user: 1 }, { unique: true });
+bookingSchema.methods.updateStatus = async function () {
+  const now = new Date();
 
-// Pre-save hook to ensure table exists and set reserved to true
-bookingSchema.pre("save", async function (next) {
-  try {
-    // Check if the table with numberOfTable exists
-    const table = await Table.findOne({ numberOfTable: this.numberOfTable });
+  const date = new Date(this.date);
 
-    if (!table) {
-      return next(new Error("Table does not exist!"));
-    }
-
-    // Set the table ID and price in the booking
-    this.table = table._id;
-    this.price = table.price;
-
-    // Set the reserved field to true
-    table.reserved = true;
-    await table.save();
-
-    next();
-  } catch (err) {
-    next(err);
+  if (now > date) {
+    this.status = "Ended";
   }
-});
 
-// Pre-find hook to populate references
+  await this.save();
+};
+
+// Populate the user details
 bookingSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: "table",
-    select: "_id numberOfTable numberOfChairs price",
-  });
-
   this.populate({
     path: "user",
     select: "firstName lastName email file phone _id",

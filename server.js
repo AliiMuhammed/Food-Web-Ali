@@ -33,10 +33,10 @@ app.set("port", port);
 var server = http.createServer(app);
 
 // Import the cron job function
-const startCronJob = require("./controllers/dailyTasks");
+// const startCronJob = require("./controllers/dailyTasks");
 
 // Start the cron job
-startCronJob();
+// startCronJob();
 
 server.listen(port);
 server.on("error", onError);

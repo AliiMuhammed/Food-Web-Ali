@@ -7,13 +7,10 @@ const router = express.Router();
 router.use(authController.protect);
 
 router
-  .route("/:tableId")
-  .post(bookingController.setIDs, bookingController.createBooking);
+  .route("/")
+  .post(bookingController.setIDs, bookingController.createBooking)
+  .get(bookingController.getBookings);
 
-// router
-//   .route("/:id")
-//   .get(bookingController.getBooking)
-//   .patch(authController.restrictTo("admin"), bookingController.updateBooking)
-//   .delete(authController.restrictTo("admin"), bookingController.deleteBooking);
+router.patch("/:bookingID", bookingController.changeStatus);
 
 module.exports = router;

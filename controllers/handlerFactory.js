@@ -3,6 +3,7 @@ const AppError = require("../utils/appError");
 const APIFeatures = require("./../utils/apiFeatures");
 const cloudinary = require("../utils/cloudinary");
 const fs = require("fs");
+const Bookings = require("../models/bookingModel");
 
 // const Email = require("../utils/email");
 
@@ -65,7 +66,6 @@ exports.updateOne = (Model) =>
 
 exports.createOne = (Model) =>
   catchAsync(async (req, res, next) => {
-
     const newDocument = await Model.create(req.body);
 
     res.status(201).json({
@@ -114,6 +114,12 @@ exports.getAll = (Model) =>
       totalPages = 0;
       docs = 0;
     }
+    // if (Model == Bookings) {
+    //   documents = documents.map((booking) => {
+    //     booking.updateStatus();
+    //     return booking;
+    //   });
+    // }
     // SEND RESPONSE
     res.status(200).json({
       status: "success",
